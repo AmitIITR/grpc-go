@@ -25,23 +25,25 @@ func doUnary(client greetpb.GreetServiceClient) {
 	log.Println("Starting to do a Unary RPC...")
 	request := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
-			FirstName: "Sumit",
-			LastName:  "Saha",
+			FirstName: "Amit",
+			LastName:  "Tiwari",
 		},
 	}
 	response, err := client.Greet(context.Background(), request)
 	if err != nil {
-		log.Fatalf("Error while calling Greet rpc : %v", err)
+		log.Printf("Error while calling Greet rpc : %v\n", err)
+	} else {
+		log.Printf("Response from greet : %v", response.Result)
 	}
-	log.Printf("Response from greet : %v", response.Result)
+
 }
 
 func doServerStreaming(client greetpb.GreetServiceClient) {
 	log.Println("Starting to do a Server Streaming RPC...")
 	request := &greetpb.GreetManyTimesRequest{
 		Greeting: &greetpb.Greeting{
-			FirstName: "Sumit",
-			LastName:  "Saha",
+			FirstName: "Amit",
+			LastName:  "Tiwari",
 		},
 	}
 	responseStream, err := client.GreetManyTimes(context.Background(), request)
@@ -68,20 +70,20 @@ func doClientStreaming(client greetpb.GreetServiceClient) {
 	requests := []*greetpb.LongGreetRequest{
 		{
 			Greeting: &greetpb.Greeting{
-				FirstName: "Sumit",
-				LastName:  "Saha",
+				FirstName: "Amit",
+				LastName:  "Tiwari",
 			},
 		},
 		{
 			Greeting: &greetpb.Greeting{
-				FirstName: "Sumit1",
-				LastName:  "Saha1",
+				FirstName: "Amit1",
+				LastName:  "Tiwari1",
 			},
 		},
 		{
 			Greeting: &greetpb.Greeting{
-				FirstName: "Sumit2",
-				LastName:  "Saha2",
+				FirstName: "Amit2",
+				LastName:  "Tiwari2",
 			},
 		},
 	}
@@ -112,20 +114,20 @@ func doBiDirectionalStreaming(client greetpb.GreetServiceClient) {
 	requests := []*greetpb.GreetEveryoneRequest{
 		{
 			Greeting: &greetpb.Greeting{
-				FirstName: "Sumit",
-				LastName:  "Saha",
+				FirstName: "Amit",
+				LastName:  "Tiwari",
 			},
 		},
 		{
 			Greeting: &greetpb.Greeting{
-				FirstName: "Sumit1",
-				LastName:  "Saha1",
+				FirstName: "Amit1",
+				LastName:  "Tiwari1",
 			},
 		},
 		{
 			Greeting: &greetpb.Greeting{
-				FirstName: "Sumit2",
-				LastName:  "Saha2",
+				FirstName: "Amit2",
+				LastName:  "Tiwari2",
 			},
 		},
 	}
@@ -179,8 +181,8 @@ func doUnaryWithDeadline(client greetpb.GreetServiceClient, timeout time.Duratio
 	log.Println("Starting to do a Unary RPC...")
 	request := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
-			FirstName: "Sumit",
-			LastName:  "Saha",
+			FirstName: "Amit",
+			LastName:  "Tiwari",
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -204,9 +206,86 @@ func doUnaryWithDeadline(client greetpb.GreetServiceClient, timeout time.Duratio
 
 }
 
+//to create new tcp connection everytime, make new client everytime
+
+//TODO send port and replace greet.Host
+func doMultipleUnary() {
+	var dialOptions []grpc.DialOption
+	if greet.UseTLS {
+		clientCert, err := tls.LoadX509KeyPair("certs/client.pem", "certs/client.key")
+		if err != nil {
+			log.Fatalf("Failed to load client certificate and key. %s.", err)
+		}
+
+		// Load the CA certificate
+		trustedCert, err := ioutil.ReadFile("certs/cacert.pem")
+		if err != nil {
+			log.Fatalf("Failed to load trusted certificate. %s.", err)
+		}
+
+		// Put the CA certificate to certificate pool
+		certPool := x509.NewCertPool()
+		if !certPool.AppendCertsFromPEM(trustedCert) {
+			log.Fatalf("Failed to append trusted certificate to certificate pool. %s.", err)
+		}
+
+		// Create the TLS configuration
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{clientCert},
+			RootCAs:      certPool,
+			MinVersion:   tls.VersionTLS13,
+			MaxVersion:   tls.VersionTLS13,
+		}
+
+		// Create a new TLS credentials based on the TLS configuration
+		cred := credentials.NewTLS(tlsConfig)
+		dialOptions = append(dialOptions, grpc.WithTransportCredentials(cred))
+	} else {
+		dialOptions = append(dialOptions, grpc.WithInsecure())
+	}
+	request := &greetpb.GreetRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: "Amit",
+			LastName:  "Tiwari",
+		},
+	}
+	clientConnection, err := grpc.Dial(greet.Host, dialOptions...) // With SSL
+	if err != nil {
+		log.Println("Could not connect: %v", err)
+		//continue
+	}
+	defer func(clientConnection *grpc.ClientConn) {
+		err = clientConnection.Close()
+		if err != nil {
+		}
+	}(clientConnection)
+
+	client := greetpb.NewGreetServiceClient(clientConnection)
+
+	//log.Println("Starting to do multiple Unary RPC...")
+	for  {
+		response, err := client.Greet(context.Background(), request)
+		if err != nil {
+			log.Printf("error while calling Greet rpc : %v\n", err)
+		} else {
+			log.Printf("Response from greet : %v\n", response.Result)
+		}
+	}
+
+}
+
 func main() {
 	utils.SetLogger("logs/greet-client-logs.txt")
 	log.Println("Starting gRPC Client")
+
+
+	//not calling  wg.Done(), hence this will run infinitely.
+	wg := &sync.WaitGroup{}
+
+	defer wg.Wait()
+	wg.Add(1)
+
+
 
 	var dialOptions []grpc.DialOption
 	if greet.UseTLS {
@@ -252,15 +331,19 @@ func main() {
 		}
 	}(clientConnection)
 
-	client := greetpb.NewGreetServiceClient(clientConnection)
+	//client := greetpb.NewGreetServiceClient(clientConnection)
+	//doUnary(client)
 
-	/*doUnary(client)
-	fmt.Println()
+	for i:=0; i < 1000;  i++ {
+		go doMultipleUnary()
+	}
+
+	/*fmt.Println()
 	doServerStreaming(client)
 	fmt.Println()
 	doClientStreaming(client)
 	fmt.Println()*/
-	doBiDirectionalStreaming(client)
+	//doBiDirectionalStreaming(client)
 	/*fmt.Println()
 	doUnaryWithDeadline(client, 5 * time.Second) // should complete
 	doUnaryWithDeadline(client, 1 * time.Second) // should timeout*/

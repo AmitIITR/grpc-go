@@ -22,12 +22,17 @@ import (
 	"github.com/saha/grpc-go-course/utils"
 )
 
+
+//var count = 0
+
 type server struct {
-	greetpb.UnimplementedGreetServiceServer
+	greetpb.GreetServiceServer
 }
 
 func (*server) Greet(ctx context.Context, request *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
-	log.Printf("Greet function invoked with %v \n", request)
+	//count++
+	//log.Printf("Greet function invoked with %d,  %v \n", count,  request)
+	log.Printf("Greet function invoked with  %v \n",  request)
 	greetRequest := request.GetGreeting()
 	if greetRequest == nil {
 		return nil, nil
@@ -186,7 +191,11 @@ func main() {
 	greetpb.RegisterGreetServiceServer(grpcServer, &localServer)
 	reflection.Register(grpcServer)
 
-	if err = grpcServer.Serve(lis); err != nil {
-		log.Fatal("Failed to server :- ", err)
-	}
+	//TODO range on list different ports
+	go func(lis net.Listener) {
+		if err = grpcServer.Serve(lis); err != nil {
+			log.Fatal("Failed to server :- ", err)
+		}
+	}(lis)
+
 }
