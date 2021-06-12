@@ -275,7 +275,7 @@ func doMultipleUnary() {
 }
 
 func main() {
-	utils.SetLogger("logs/greet-client-logs.txt")
+	utils.SetLogger("/tmp/greet-client-logs.txt")
 	log.Println("Starting gRPC Client")
 
 

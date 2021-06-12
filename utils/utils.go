@@ -7,9 +7,9 @@ import (
 )
 
 func SetLogger(path string) {
-	//removeLogFile(path)
-	//file := createLogFile(path)
-	//log.SetOutput(file)
+	removeLogFile(path)
+	file := createLogFile(path)
+	log.SetOutput(file)
 }
 
 func removeLogFile(path string) {

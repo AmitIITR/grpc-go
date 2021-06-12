@@ -141,7 +141,7 @@ func (*server) GreetWithDeadline(ctx context.Context, request *greetpb.GreetRequ
 }
 
 func main() {
-	utils.SetLogger("logs/greet-server-logs.txt")
+	utils.SetLogger("/tmp/greet-server-logs.txt")
 
 	log.Println("Starting Greet gRPC Server")
 

@@ -214,7 +214,7 @@ func dataToBlogPb(data *blogItem) *blogpb.Blog {
 }
 
 func main() {
-	utils.SetLogger("logs/blog-server-logs.txt")
+	utils.SetLogger("/tmp/blog-server-logs.txt")
 	// if we crash the go code, we get the file name and line number
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	mongoClient, grpcServer := startServices()

@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	utils.SetLogger("logs/blog-client-logs.txt")
+	utils.SetLogger("/tmp/blog-client-logs.txt")
 	log.Println("Starting Blog Client")
 
 	clientConnection, err := grpc.Dial(greet.Host, grpc.WithInsecure())
