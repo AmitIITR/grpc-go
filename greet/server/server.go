@@ -192,10 +192,13 @@ func main() {
 	reflection.Register(grpcServer)
 
 	//TODO range on list different ports
-	go func(lis net.Listener) {
-		if err = grpcServer.Serve(lis); err != nil {
-			log.Fatal("Failed to server :- ", err)
-		}
-	}(lis)
+	//go func(lis net.Listener) {
+	//	if err = grpcServer.Serve(lis); err != nil {
+	//		log.Fatal("Failed to server :- ", err)
+	//	}
+	//}(lis)
 
+	if err = grpcServer.Serve(lis); err != nil {
+		log.Fatal("Failed to server :- ", err)
+	}
 }

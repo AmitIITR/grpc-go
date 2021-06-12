@@ -18,7 +18,6 @@ import (
 
 	"github.com/saha/grpc-go-course/greet"
 	"github.com/saha/grpc-go-course/greet/greetpb"
-	"github.com/saha/grpc-go-course/utils"
 )
 
 func doUnary(client greetpb.GreetServiceClient) {
@@ -275,7 +274,7 @@ func doMultipleUnary() {
 }
 
 func main() {
-	utils.SetLogger("/tmp/greet-client-logs.txt")
+	//utils.SetLogger("/tmp/greet-client-logs.txt")
 	log.Println("Starting gRPC Client")
 
 
